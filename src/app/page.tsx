@@ -12,6 +12,7 @@ import { InputPanel } from "@/components/InputPanel";
 import { HorizonCanvas } from "@/components/HorizonCanvas";
 import { RecommendationsGrid } from "@/components/RecommendationsGrid";
 import { TraceLogPanel } from "@/components/TraceLogPanel";
+import Image from "next/image";
 
 export default function HomePage() {
   const [yearning, setYearning] = useState<string>(HORIZON_PRESETS[0].yearning);
@@ -79,9 +80,18 @@ export default function HomePage() {
           <div className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
             Qloo Agentic Hackathon
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            Re:Horizon
-          </h1>
+          <div className="flex items-center gap-3">
+            <Image
+              src="/logo.png"
+              alt="Re:Horizon logo"
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-lg object-contain"
+            />
+            <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              Re:Horizon
+            </h1>
+          </div>
           <p className="max-w-3xl text-sm leading-relaxed text-zinc-400 sm:text-base">
             Sensory decompression and cultural sanctuary agent for individuals
             experiencing physical, medical, or spatial confinement. Powered by
