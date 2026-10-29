@@ -2,7 +2,7 @@
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.4.3-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![Qloo API](https://img.shields.io/badge/Qloo_Taste_Graph-API_v2-10B981?style=flat-square)](https://docs.qloo.com/)
-[![Google GenAI](https://img.shields.io/badge/Google_GenAI-2.31.0-4285F4?style=flat-square&logo=google&logoColor=white)](https://ai.google.dev/)
+[![Gemini 4 Argon](https://img.shields.io/badge/Gemini_4-Argon-4285F4?style=flat-square&logo=google&logoColor=white)](https://ai.google.dev/)
 
 Web application built for the **Qloo Agentic Hackathon**. It converts a short text or voice description of a desired environment and a selected energy level into cross-domain Qloo API v2 queries, a color gradient, procedural Web Audio output, and a short text summary.
 
@@ -20,6 +20,30 @@ Web application built for the **Qloo Agentic Hackathon**. It converts a short te
 Searching across separate media catalogs requires multiple queries and manual filtering, which is impractical for users in confinement or with high fatigue. Standard LLM prompts generate text without verifying cross-domain entity relationships. Re:Horizon uses Gemini for structured parameter extraction and Qloo API v2 for retrieving correlated entities across music, books, movies, and destinations.
 
 ## 2. Qloo Workflow
+
+```mermaid
+flowchart TD
+    A["User Input: Preset, Text, or Voice + Energy Level"] --> B["POST /api/horizon"]
+    B --> C["Step 1: Gemini Parameter Extraction"]
+    C -->|"3 Tag Keywords + 3 Anchor Terms"| D["Step 2: Qloo Signal Resolution"]
+    C -->|"Palette + Kelvin + Soundscape Type"| I["Web Audio + Ambient Room Canvas"]
+
+    subgraph QlooAPI["Qloo Taste Graph API v2 (Server-Side Cached)"]
+        D --> D1["GET /v2/tags (Resolve urn:tag IDs)"]
+        D --> D2["GET /search (Resolve entity_id UUIDs)"]
+        D1 --> E["Step 3: Parallel Cross-Domain Insights (GET /v2/insights)"]
+        D2 --> E
+        E --> E1["urn:entity:artist"]
+        E --> E2["urn:entity:book"]
+        E --> E3["urn:entity:movie"]
+        E --> E4["urn:entity:destination"]
+    end
+
+    E1 & E2 & E3 & E4 --> F["Step 4: Grounded Narrative Synthesis"]
+    F --> G["Horizon Sanctuary UI + Voice Narrator"]
+    E1 & E2 & E3 & E4 --> H["Interactive Signal Refinement Panel"]
+    H -->|"Toggle Active Tag URNs or Entity UUIDs"| E
+```
 
 The backend (`/api/horizon`) executes four steps:
 
@@ -58,13 +82,13 @@ Example for input: *"quiet grounding, wet pine needles, cool air, soft natural l
 ### Run Locally
 1. Install dependencies:
    ```bash
-   git clone <REPO_URL>
+   git clone https://github.com/vero-code/re-horizon.git
    cd re-horizon
    npm install
    ```
-2. Create `.env.local` from `.env.example` and set your keys:
+2. Create `.env` from `.env.example` and set your keys:
    ```bash
-   cp .env.example .env.local
+   cp .env.example .env
 3.  Start the server:
     ```bash
     npm run dev
@@ -73,6 +97,7 @@ Example for input: *"quiet grounding, wet pine needles, cool air, soft natural l
 
 ## **5. Limitations and Safe Use**
 
+-   **Server-Side Caching and Quota Protection:**  All Qloo API GET requests (`src/lib/qloo.ts`) use private server-side caching (`revalidate: 3600`  seconds) to prevent redundant calls for identical tag or entity lookups and respect the hackathon rate and quota limits.
 -   **Aggregate Data Only:**  Qloo results represent aggregate cultural correlations. This application does not provide medical advice, diagnosis, or treatment.
 -   **No Personal Data:**  Only general descriptive keywords and public work/genre terms are sent to Qloo.
 -   **Browser APIs:**  Audio synthesis uses Web Audio API; speech synthesis and microphone input use Web Speech API (supported in desktop Chrome and Edge).
