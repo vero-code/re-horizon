@@ -60,11 +60,14 @@ export function HorizonCanvas({ session }: HorizonCanvasProps) {
     <section
       className={
         isExpanded
-          ? "fixed inset-0 z-50 flex flex-col justify-between overflow-y-auto p-6 sm:p-12"
-          : "relative overflow-hidden rounded-2xl border border-zinc-800 p-6 sm:p-10"
+          ? "fixed inset-0 z-50 flex flex-col justify-between overflow-y-auto bg-zinc-950 p-6 sm:p-12"
+          : "relative overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 p-6 sm:p-10"
       }
       style={{
-        background: `radial-gradient(circle at 20% 20%, ${c1}44 0%, transparent 55%), radial-gradient(circle at 80% 75%, ${c2}44 0%, transparent 60%), linear-gradient(135deg, #09090b 0%, ${c3}29 100%)`,
+        backgroundColor: "#09090b",
+        backgroundImage: isExpanded
+          ? `radial-gradient(circle at 20% 25%, ${c1}88 0%, transparent 60%), radial-gradient(circle at 80% 75%, ${c2}88 0%, transparent 65%), radial-gradient(circle at 50% 50%, ${c3}55 0%, #09090b 100%)`
+          : `radial-gradient(circle at 20% 20%, ${c1}44 0%, transparent 55%), radial-gradient(circle at 80% 75%, ${c2}44 0%, transparent 60%), linear-gradient(135deg, #09090b 0%, ${c3}33 100%)`,
       }}
     >
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
