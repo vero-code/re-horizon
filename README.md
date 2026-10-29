@@ -45,7 +45,7 @@ flowchart TD
     H -->|"Toggle Active Tag URNs or Entity UUIDs"| E
 ```
 
-The backend (`/api/horizon`) executes four steps:
+Following the qloo-hackathon-kit workflow pattern (resolve signals -> confirm/refine -> recommend), the backend (/api/horizon) executes four server-side steps compatible with Vercel serverless functions:
 
 1. **Parameter Extraction (Gemini):** Extracts 3 tag keywords, 3 anchor search terms, a soundscape preset (`ocean`, `rain`, `wind`, `warm-drone`), a color temperature integer (`2200`–`5000` K), and 3 hex colors.
 2. **Signal Resolution (`GET /v2/tags`, `GET /search`):** Resolves keywords into Qloo tag URNs and search terms into Qloo entity UUIDs.
@@ -89,9 +89,11 @@ Example for input: *"quiet grounding, wet pine needles, cool air, soft natural l
 2. Create `.env` from `.env.example` and set your keys:
    ```bash
    cp .env.example .env
+   ```
 3.  Start the server:
     ```bash
     npm run dev
+    ```
     
 4.  Open `http://localhost:3000`.
 
