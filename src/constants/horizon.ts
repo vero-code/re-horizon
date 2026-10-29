@@ -1,5 +1,5 @@
 import { Type, Schema } from "@google/genai";
-import { HorizonPreset } from "@/types/horizon";
+import { EnergyLevel, HorizonPreset, SoundscapeType } from "@/types/horizon";
 
 export const HORIZON_PRESETS: HorizonPreset[] = [
   {
@@ -31,6 +31,35 @@ export const HORIZON_PRESETS: HorizonPreset[] = [
     defaultEnergy: "minimal",
   },
 ];
+
+export const ENERGY_OPTIONS: {
+  value: EnergyLevel;
+  label: string;
+  hint: string;
+}[] = [
+  {
+    value: "minimal",
+    label: "Minimal Energy",
+    hint: "Short sentences, low sensory load",
+  },
+  {
+    value: "low",
+    label: "Low Energy",
+    hint: "Gentle pacing, calm narrative",
+  },
+  {
+    value: "moderate",
+    label: "Moderate Energy",
+    hint: "Deeper cultural context",
+  },
+];
+
+export const HARMONIC_CHORDS: Record<SoundscapeType, number[]> = {
+  ocean: [110.0, 164.81, 220.0, 277.18],
+  rain: [130.81, 196.0, 246.94, 293.66],
+  wind: [146.83, 220.0, 293.66, 369.99],
+  "warm-drone": [98.0, 146.83, 196.0, 246.94],
+};
 
 export const SIGNAL_EXTRACTION_PROMPT = `You are a cultural signal translator for an isolation recovery agent.
 Convert the user's emotional yearning and cognitive energy threshold into concrete, public cultural search signals for the Qloo API.
@@ -92,3 +121,42 @@ export const NARRATIVE_SYNTHESIS_SCHEMA: Schema = {
   },
   required: ["title", "paragraphs", "culturalBridge"],
 };
+
+export const PREFERRED_MALE_VOICES: string[] = [
+  "uk english male",
+  "guy",
+  "christopher",
+  "eric",
+  "roger",
+  "steffan",
+  "david",
+  "mark",
+  "daniel",
+  "george",
+  "ryan",
+  "male",
+];
+
+export const EXCLUDED_FEMALE_VOICES: string[] = [
+  "female",
+  "google us english",
+  "zira",
+  "aria",
+  "jenny",
+  "michelle",
+  "ana",
+  "sonia",
+  "libby",
+  "maisie",
+  "hazel",
+  "susan",
+  "samantha",
+  "victoria",
+];
+
+export const SOUNDSCAPE_LABELS: { value: SoundscapeType; label: string }[] = [
+  { value: "ocean", label: "Sound: Ocean Waves" },
+  { value: "rain", label: "Sound: Forest Rain" },
+  { value: "wind", label: "Sound: Open Wind" },
+  { value: "warm-drone", label: "Sound: Warm Harmonic Pad" },
+];

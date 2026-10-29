@@ -1,11 +1,5 @@
+import { HARMONIC_CHORDS } from "@/constants/horizon";
 import { SoundscapeType } from "@/types/horizon";
-
-const HARMONIC_CHORDS: Record<SoundscapeType, number[]> = {
-  ocean: [110.0, 164.81, 220.0, 277.18],
-  rain: [130.81, 196.0, 246.94, 293.66],
-  wind: [146.83, 220.0, 293.66, 369.99],
-  "warm-drone": [98.0, 146.83, 196.0, 246.94],
-};
 
 export class SoundscapeEngine {
   private ctx: AudioContext | null = null;

@@ -3,27 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { HorizonSession, SoundscapeType } from "@/types/horizon";
 import { SoundscapeEngine } from "@/lib/soundscape-engine";
-import { SpeechNarrator } from "@/lib/speech-narrator";
-import {
-  CollapseIcon,
-  ExpandIcon,
-  SunIcon,
-  VoiceStartIcon,
-  VoiceStopIcon,
-  VolumeOffIcon,
-  VolumeOnIcon,
-} from "@/components/icons/HorizonIcons";
+import { SpeechNarrator, VoiceOption } from "@/lib/speech-narrator";
+import { HorizonToolbar } from "@/components/HorizonToolbar";
 
 interface HorizonCanvasProps {
   session: HorizonSession;
 }
-
-const SOUNDSCAPE_LABELS: { value: SoundscapeType; label: string }[] = [
-  { value: "ocean", label: "Sound: Ocean Waves" },
-  { value: "rain", label: "Sound: Forest Rain" },
-  { value: "wind", label: "Sound: Open Wind" },
-  { value: "warm-drone", label: "Sound: Warm Harmonic Pad" },
-];
 
 function normalizeHex(color: string): string {
   const clean = color.trim().replace(/^#/, "");
@@ -38,12 +23,14 @@ export function HorizonCanvas({ session }: HorizonCanvasProps) {
   const { palette, lightKelvin, soundscape: initialSoundscape } =
     signals.extracted;
 
-  const [c1, c2, c3] = palette.map(normalizeHex);
+  const [c1, c2, c3] = palette.map(normalizeHex) as [string, string, string];
   const [activeSoundscape, setActiveSoundscape] =
     useState<SoundscapeType>(initialSoundscape);
   const [isAudioActive, setIsAudioActive] = useState(false);
   const [volume, setVolume] = useState(0.5);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [voices, setVoices] = useState<VoiceOption[]>([]);
+  const [selectedVoiceUri, setSelectedVoiceUri] = useState<string>("");
   const [isExpanded, setIsExpanded] = useState(false);
 
   const engineRef = useRef<SoundscapeEngine | null>(null);
@@ -55,10 +42,16 @@ export function HorizonCanvas({ session }: HorizonCanvasProps) {
 
   useEffect(() => {
     const engine = new SoundscapeEngine();
-    const narrator = new SpeechNarrator((speaking) => {
-      setIsSpeaking(speaking);
-      engine.setDucking(speaking);
-    });
+    const narrator = new SpeechNarrator(
+      (speaking) => {
+        setIsSpeaking(speaking);
+        engine.setDucking(speaking);
+      },
+      (loadedVoices, defaultUri) => {
+        setVoices(loadedVoices);
+        setSelectedVoiceUri((prev) => prev || defaultUri);
+      }
+    );
 
     engineRef.current = engine;
     narratorRef.current = narrator;
@@ -94,6 +87,13 @@ export function HorizonCanvas({ session }: HorizonCanvasProps) {
     narratorRef.current?.setVolume(nextVolume);
   };
 
+  const handleVoiceChange = (nextUri: string) => {
+    setSelectedVoiceUri(nextUri);
+    if (isSpeaking && narratorRef.current) {
+      narratorRef.current.speakNarrative(narrative, nextUri);
+    }
+  };
+
   const toggleNarration = () => {
     if (!narratorRef.current) return;
     if (isSpeaking) {
@@ -104,7 +104,7 @@ export function HorizonCanvas({ session }: HorizonCanvasProps) {
         setIsAudioActive(true);
       }
       narratorRef.current.setVolume(volume);
-      narratorRef.current.speakNarrative(narrative);
+      narratorRef.current.speakNarrative(narrative, selectedVoiceUri);
     }
   };
 
@@ -122,99 +122,23 @@ export function HorizonCanvas({ session }: HorizonCanvasProps) {
           : `radial-gradient(circle at 20% 20%, ${c1}44 0%, transparent 55%), radial-gradient(circle at 80% 75%, ${c2}44 0%, transparent 60%), linear-gradient(135deg, #09090b 0%, ${c3}33 100%)`,
       }}
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/40 px-3 py-1 text-xs text-zinc-200">
-            <SunIcon className="w-3.5 h-3.5" />
-            <span>Room Light Target: {lightKelvin}K</span>
-          </span>
-          <div className="flex items-center gap-1.5 rounded-full border border-white/15 bg-black/40 px-3 py-1 text-xs text-zinc-200">
-            <span>Palette:</span>
-            {[c1, c2, c3].map((hex, idx) => (
-              <span
-                key={`${hex}-${idx}`}
-                title={hex}
-                className="inline-block h-3.5 w-3.5 rounded-full border border-white/30"
-                style={{ backgroundColor: hex }}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <select
-            aria-label="Soundscape Texture"
-            value={activeSoundscape}
-            onChange={(e) =>
-              handleTextureChange(e.target.value as SoundscapeType)
-            }
-            className="rounded-xl border border-white/15 bg-black/60 px-2.5 py-2 text-xs text-zinc-200 focus:outline-none"
-          >
-            {SOUNDSCAPE_LABELS.map((opt) => (
-              <option key={opt.value} value={opt.value} className="bg-zinc-900">
-                {opt.label}
-              </option>
-            ))}
-          </select>
-
-          <button
-            type="button"
-            onClick={toggleAudio}
-            className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-black/50 px-3.5 py-2 text-xs font-medium text-zinc-100 transition hover:bg-black/70"
-          >
-            {isAudioActive ? (
-              <VolumeOnIcon className="w-4 h-4 text-emerald-400" />
-            ) : (
-              <VolumeOffIcon className="w-4 h-4" />
-            )}
-            <span>{isAudioActive ? "Stop Soundscape" : "Start Soundscape"}</span>
-          </button>
-
-          <div className="flex items-center gap-2 rounded-xl border border-white/15 bg-black/50 px-3 py-1.5">
-            <span className="text-[11px] text-zinc-300">
-              Vol {Math.round(volume * 100)}%
-            </span>
-            <input
-              type="range"
-              aria-label="Audio Volume"
-              min={0}
-              max={1}
-              step={0.05}
-              value={volume}
-              onChange={(e) => handleVolumeChange(Number(e.target.value))}
-              className="w-20 cursor-pointer accent-zinc-200"
-            />
-          </div>
-
-          <button
-            type="button"
-            onClick={toggleNarration}
-            className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-black/50 px-3.5 py-2 text-xs font-medium text-zinc-100 transition hover:bg-black/70"
-          >
-            {isSpeaking ? (
-              <VoiceStopIcon className="w-4 h-4 text-amber-400" />
-            ) : (
-              <VoiceStartIcon className="w-4 h-4" />
-            )}
-            <span>
-              {isSpeaking ? "Stop Voice Guide" : "Eyes-Closed Voice Guide"}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setIsExpanded((prev) => !prev)}
-            className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-black/50 px-3.5 py-2 text-xs font-medium text-zinc-100 transition hover:bg-black/70"
-          >
-            {isExpanded ? (
-              <CollapseIcon className="w-4 h-4" />
-            ) : (
-              <ExpandIcon className="w-4 h-4" />
-            )}
-            <span>{isExpanded ? "Exit Full Window" : "Ambient Room Mode"}</span>
-          </button>
-        </div>
-      </div>
+      <HorizonToolbar
+        lightKelvin={lightKelvin}
+        colors={[c1, c2, c3]}
+        activeSoundscape={activeSoundscape}
+        isAudioActive={isAudioActive}
+        volume={volume}
+        voices={voices}
+        selectedVoiceUri={selectedVoiceUri}
+        isSpeaking={isSpeaking}
+        isExpanded={isExpanded}
+        onTextureChange={handleTextureChange}
+        onToggleAudio={toggleAudio}
+        onVolumeChange={handleVolumeChange}
+        onVoiceChange={handleVoiceChange}
+        onToggleNarration={toggleNarration}
+        onToggleExpand={() => setIsExpanded((prev) => !prev)}
+      />
 
       <div className="my-8 max-w-3xl space-y-4">
         <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">

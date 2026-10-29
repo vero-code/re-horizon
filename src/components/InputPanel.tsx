@@ -1,6 +1,6 @@
 "use client";
 
-import { HORIZON_PRESETS } from "@/constants/horizon";
+import { ENERGY_OPTIONS, HORIZON_PRESETS } from "@/constants/horizon";
 import { EnergyLevel, HorizonPreset, HorizonRequest } from "@/types/horizon";
 import { SparklesIcon } from "@/components/icons/HorizonIcons";
 
@@ -14,24 +14,6 @@ interface InputPanelProps {
   onSubmit: (req: HorizonRequest) => void;
 }
 
-const ENERGY_OPTIONS: { value: EnergyLevel; label: string; hint: string }[] = [
-  {
-    value: "minimal",
-    label: "Minimal Energy",
-    hint: "Short sentences, low sensory load",
-  },
-  {
-    value: "low",
-    label: "Low Energy",
-    hint: "Gentle pacing, calm narrative",
-  },
-  {
-    value: "moderate",
-    label: "Moderate Energy",
-    hint: "Deeper cultural context",
-  },
-];
-
 export function InputPanel({
   yearning,
   energyLevel,
@@ -41,6 +23,11 @@ export function InputPanel({
   onSelectPreset,
   onSubmit,
 }: InputPanelProps) {
+  const currentEnergyIndex = Math.max(
+    0,
+    ENERGY_OPTIONS.findIndex((o) => o.value === energyLevel)
+  );
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!yearning.trim() || isLoading) return;
@@ -54,20 +41,27 @@ export function InputPanel({
           1. Quick Sanctuary Presets (Low-Effort Input)
         </h2>
         <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          {HORIZON_PRESETS.map((preset) => (
-            <button
-              key={preset.id}
-              type="button"
-              disabled={isLoading}
-              onClick={() => onSelectPreset(preset)}
-              className="rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-3 text-left text-sm text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-800/60 disabled:opacity-50"
-            >
-              <div className="font-medium text-zinc-100">{preset.label}</div>
-              <div className="mt-1 line-clamp-2 text-xs text-zinc-400">
-                {preset.yearning}
-              </div>
-            </button>
-          ))}
+          {HORIZON_PRESETS.map((preset) => {
+            const isSelected = yearning === preset.yearning;
+            return (
+              <button
+                key={preset.id}
+                type="button"
+                disabled={isLoading}
+                onClick={() => onSelectPreset(preset)}
+                className={`rounded-xl border px-4 py-3 text-left text-sm transition disabled:opacity-50 ${
+                  isSelected
+                    ? "border-amber-400/70 bg-amber-500/10 text-zinc-100"
+                    : "border-zinc-800 bg-zinc-950/60 text-zinc-200 hover:border-zinc-600 hover:bg-zinc-800/60"
+                }`}
+              >
+                <div className="font-medium text-zinc-100">{preset.label}</div>
+                <div className="mt-1 line-clamp-2 text-xs text-zinc-400">
+                  {preset.yearning}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -90,11 +84,35 @@ export function InputPanel({
           />
         </div>
 
-        <div>
-          <span className="block text-sm font-medium text-zinc-300">
-            3. Current Cognitive Energy Threshold
-          </span>
-          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <label
+              htmlFor="energy-slider"
+              className="block text-sm font-medium text-zinc-300"
+            >
+              3. Current Cognitive Energy Threshold
+            </label>
+            <span className="text-xs font-medium text-amber-400">
+              {ENERGY_OPTIONS[currentEnergyIndex]?.label}
+            </span>
+          </div>
+
+          <input
+            id="energy-slider"
+            type="range"
+            min={0}
+            max={ENERGY_OPTIONS.length - 1}
+            step={1}
+            disabled={isLoading}
+            value={currentEnergyIndex}
+            onChange={(e) => {
+              const nextOpt = ENERGY_OPTIONS[Number(e.target.value)];
+              if (nextOpt) onEnergyChange(nextOpt.value);
+            }}
+            className="w-full cursor-pointer accent-amber-400"
+          />
+
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {ENERGY_OPTIONS.map((opt) => {
               const active = energyLevel === opt.value;
               return (

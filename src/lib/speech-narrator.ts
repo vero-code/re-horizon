@@ -1,31 +1,32 @@
+import {
+  EXCLUDED_FEMALE_VOICES,
+  PREFERRED_MALE_VOICES,
+} from "@/constants/horizon";
 import { HorizonNarrative } from "@/types/horizon";
 
-const PREFERRED_MALE_VOICES = [
-  "guy",
-  "christopher",
-  "eric",
-  "roger",
-  "steffan",
-  "david",
-  "mark",
-  "daniel",
-  "george",
-  "ryan",
-  "male",
-];
+export interface VoiceOption {
+  voiceURI: string;
+  name: string;
+  lang: string;
+}
 
 export class SpeechNarrator {
   private isSpeaking = false;
   private volume = 0.85;
-  private lastNarrative: HorizonNarrative | null = null;
   private onStateChange?: (speaking: boolean) => void;
+  private onVoicesLoaded?: (voices: VoiceOption[], defaultUri: string) => void;
 
-  constructor(onStateChange?: (speaking: boolean) => void) {
+  constructor(
+    onStateChange?: (speaking: boolean) => void,
+    onVoicesLoaded?: (voices: VoiceOption[], defaultUri: string) => void
+  ) {
     this.onStateChange = onStateChange;
+    this.onVoicesLoaded = onVoicesLoaded;
+
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      window.speechSynthesis.getVoices();
+      this.emitVoices();
       window.speechSynthesis.onvoiceschanged = () => {
-        window.speechSynthesis.getVoices();
+        this.emitVoices();
       };
     }
   }
@@ -38,13 +39,15 @@ export class SpeechNarrator {
     this.volume = Math.max(0.05, Math.min(1.0, nextVolume));
   }
 
-  public speakNarrative(narrative: HorizonNarrative): void {
+  public speakNarrative(
+    narrative: HorizonNarrative,
+    selectedVoiceUri?: string
+  ): void {
     if (!this.isSupported()) {
       throw new Error("Speech synthesis is not supported in this browser.");
     }
 
     this.stop();
-    this.lastNarrative = narrative;
 
     const fullText = [
       narrative.title,
@@ -58,10 +61,14 @@ export class SpeechNarrator {
     utterance.pitch = 0.86;
     utterance.volume = this.volume;
 
-    const selectedVoice = this.pickCalmMaleVoice();
-    if (selectedVoice) {
-      utterance.voice = selectedVoice;
-      utterance.lang = selectedVoice.lang;
+    const allVoices = window.speechSynthesis.getVoices();
+    const matchedVoice =
+      allVoices.find((v) => v.voiceURI === selectedVoiceUri) ||
+      this.pickDefaultMaleVoice(allVoices);
+
+    if (matchedVoice) {
+      utterance.voice = matchedVoice;
+      utterance.lang = matchedVoice.lang;
     }
 
     utterance.onstart = () => {
@@ -91,20 +98,50 @@ export class SpeechNarrator {
     }
   }
 
-  private pickCalmMaleVoice(): SpeechSynthesisVoice | undefined {
-    const voices = window.speechSynthesis.getVoices();
-    const englishVoices = voices.filter((v) =>
+  private emitVoices(): void {
+    if (!this.isSupported()) return;
+    const rawVoices = window.speechSynthesis.getVoices();
+    if (rawVoices.length === 0) return;
+
+    const maleEnglishVoices = this.filterMaleEnglishVoices(rawVoices);
+    const defaultVoice = this.pickDefaultMaleVoice(rawVoices);
+
+    const options: VoiceOption[] = maleEnglishVoices.map((v) => ({
+      voiceURI: v.voiceURI,
+      name: v.name.replace(/Microsoft |Google /g, ""),
+      lang: v.lang,
+    }));
+
+    this.onVoicesLoaded?.(options, defaultVoice?.voiceURI || "");
+  }
+
+  private filterMaleEnglishVoices(
+    voices: SpeechSynthesisVoice[]
+  ): SpeechSynthesisVoice[] {
+    const english = voices.filter((v) =>
       v.lang.toLowerCase().startsWith("en")
     );
 
+    const filtered = english.filter((v) => {
+      const lower = v.name.toLowerCase();
+      return !EXCLUDED_FEMALE_VOICES.some((fem) => lower.includes(fem));
+    });
+
+    return filtered.length > 0 ? filtered : english;
+  }
+
+  private pickDefaultMaleVoice(
+    voices: SpeechSynthesisVoice[]
+  ): SpeechSynthesisVoice | undefined {
+    const candidates = this.filterMaleEnglishVoices(voices);
+
     for (const keyword of PREFERRED_MALE_VOICES) {
-      const match = englishVoices.find((v) => {
-        const lower = v.name.toLowerCase();
-        return lower.includes(keyword) && !lower.includes("female");
-      });
+      const match = candidates.find((v) =>
+        v.name.toLowerCase().includes(keyword)
+      );
       if (match) return match;
     }
 
-    return englishVoices[0];
+    return candidates[0];
   }
 }
