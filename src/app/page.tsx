@@ -78,24 +78,32 @@ export default function HomePage() {
     <div className="relative text-zinc-100">
       <SwayingGrassBackground intensity={0.85} interactive={true} />
       <main className="relative z-10 mx-auto max-w-6xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
-        <header className="space-y-2 border-b border-zinc-800 pb-6">
-          <div className="flex items-center gap-3">
-            <Image
+                <header className="flex flex-col items-center text-center space-y-2 pb-4">
+          <div className="flex items-center justify-center gap-3">
+            {/* <Image
               src="/logo.png"
               alt="Re:Horizon logo"
-              width={40}
-              height={40}
-              className="h-10 w-10 rounded-lg object-contain"
-            />
-            <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Re:Horizon
+              width={36}
+              height={36}
+              className="h-9 w-9 rounded-lg object-contain"
+            /> */}
+            <h1 className="flex items-center gap-2.5 text-3xl font-light tracking-wider text-zinc-100">
+              <span>Re</span>
+              <span
+                className="inline-block h-7 w-[2px] bg-gradient-to-b from-transparent via-amber-300 to-transparent shadow-[0_0_12px_#fbbf24]"
+                aria-hidden="true"
+              />
+              <span className="font-semibold text-white">Horizon</span>
             </h1>
           </div>
-          <p className="max-w-3xl text-sm leading-relaxed text-zinc-400 sm:text-base">
-            Sensory decompression and cultural sanctuary agent for individuals
-            experiencing physical, medical, or spatial confinement. Powered by
-            Qloo Taste Graph v2 and Google Gemini.
+
+          <p className="tracking-[0.24em] uppercase text-xs text-amber-200/80">
+            Sensory Recovery Beyond 4 Walls · Powered by Qloo
           </p>
+
+          <div className="w-full max-w-2xl pt-2">
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
+          </div>
         </header>
 
         <InputPanel
