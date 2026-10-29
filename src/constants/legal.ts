@@ -4,8 +4,8 @@ export interface LegalSection {
 }
 
 export const LEGAL_META = {
-  COPYRIGHT: "2026 Re:Horizon. Licensed under Apache 2.0.",
-  AUTHOR_HANDLE: "vero-code",
+  COPYRIGHT: "2026 Re:Horizon.",
+  AUTHOR_HANDLE: "Veronika Kashtanova",
   REPO_URL: "https://github.com/vero-code/re-horizon",
 } as const;
 

@@ -74,12 +74,9 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="bg-zinc-950 text-zinc-100">
       <main className="mx-auto max-w-6xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
         <header className="space-y-2 border-b border-zinc-800 pb-6">
-          <div className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
-            Qloo Agentic Hackathon
-          </div>
           <div className="flex items-center gap-3">
             <Image
               src="/logo.png"
