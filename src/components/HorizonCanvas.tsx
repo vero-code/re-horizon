@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { HorizonSession } from "@/types/horizon";
+import { HorizonSession, SoundscapeType } from "@/types/horizon";
 import { SoundscapeEngine } from "@/lib/soundscape-engine";
+import { SpeechNarrator } from "@/lib/speech-narrator";
 import {
   CollapseIcon,
   ExpandIcon,
   SunIcon,
+  VoiceStartIcon,
+  VoiceStopIcon,
   VolumeOffIcon,
   VolumeOnIcon,
 } from "@/components/icons/HorizonIcons";
@@ -14,6 +17,13 @@ import {
 interface HorizonCanvasProps {
   session: HorizonSession;
 }
+
+const SOUNDSCAPE_LABELS: { value: SoundscapeType; label: string }[] = [
+  { value: "ocean", label: "Sound: Ocean Waves" },
+  { value: "rain", label: "Sound: Forest Rain" },
+  { value: "wind", label: "Sound: Open Wind" },
+  { value: "warm-drone", label: "Sound: Warm Harmonic Pad" },
+];
 
 function normalizeHex(color: string): string {
   const clean = color.trim().replace(/^#/, "");
@@ -25,25 +35,47 @@ function normalizeHex(color: string): string {
 
 export function HorizonCanvas({ session }: HorizonCanvasProps) {
   const { narrative, signals } = session;
-  const { palette, lightKelvin, soundscape } = signals.extracted;
+  const { palette, lightKelvin, soundscape: initialSoundscape } =
+    signals.extracted;
 
   const [c1, c2, c3] = palette.map(normalizeHex);
+  const [activeSoundscape, setActiveSoundscape] =
+    useState<SoundscapeType>(initialSoundscape);
   const [isAudioActive, setIsAudioActive] = useState(false);
+  const [volume, setVolume] = useState(0.5);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+
   const engineRef = useRef<SoundscapeEngine | null>(null);
+  const narratorRef = useRef<SpeechNarrator | null>(null);
 
   useEffect(() => {
-    engineRef.current = new SoundscapeEngine();
+    setActiveSoundscape(initialSoundscape);
+  }, [initialSoundscape]);
+
+  useEffect(() => {
+    const engine = new SoundscapeEngine();
+    const narrator = new SpeechNarrator((speaking) => {
+      setIsSpeaking(speaking);
+      engine.setDucking(speaking);
+    });
+
+    engineRef.current = engine;
+    narratorRef.current = narrator;
+
     return () => {
-      engineRef.current?.stop();
+      engine.stop();
+      narrator.stop();
     };
   }, []);
 
-  useEffect(() => {
-    if (isAudioActive && engineRef.current) {
-      engineRef.current.start(soundscape);
+  const handleTextureChange = (nextType: SoundscapeType) => {
+    setActiveSoundscape(nextType);
+    if (engineRef.current) {
+      engineRef.current.start(nextType, volume);
+      setIsAudioActive(true);
     }
-  }, [soundscape, isAudioActive]);
+  };
 
   const toggleAudio = () => {
     if (!engineRef.current) return;
@@ -51,8 +83,28 @@ export function HorizonCanvas({ session }: HorizonCanvasProps) {
       engineRef.current.stop();
       setIsAudioActive(false);
     } else {
-      engineRef.current.start(soundscape);
+      engineRef.current.start(activeSoundscape, volume);
       setIsAudioActive(true);
+    }
+  };
+
+  const handleVolumeChange = (nextVolume: number) => {
+    setVolume(nextVolume);
+    engineRef.current?.setVolume(nextVolume);
+    narratorRef.current?.setVolume(nextVolume);
+  };
+
+  const toggleNarration = () => {
+    if (!narratorRef.current) return;
+    if (isSpeaking) {
+      narratorRef.current.stop();
+    } else {
+      if (!isAudioActive && engineRef.current) {
+        engineRef.current.start(activeSoundscape, volume);
+        setIsAudioActive(true);
+      }
+      narratorRef.current.setVolume(volume);
+      narratorRef.current.speakNarrative(narrative);
     }
   };
 
@@ -89,21 +141,63 @@ export function HorizonCanvas({ session }: HorizonCanvasProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            aria-label="Soundscape Texture"
+            value={activeSoundscape}
+            onChange={(e) =>
+              handleTextureChange(e.target.value as SoundscapeType)
+            }
+            className="rounded-xl border border-white/15 bg-black/60 px-2.5 py-2 text-xs text-zinc-200 focus:outline-none"
+          >
+            {SOUNDSCAPE_LABELS.map((opt) => (
+              <option key={opt.value} value={opt.value} className="bg-zinc-900">
+                {opt.label}
+              </option>
+            ))}
+          </select>
+
           <button
             type="button"
             onClick={toggleAudio}
             className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-black/50 px-3.5 py-2 text-xs font-medium text-zinc-100 transition hover:bg-black/70"
           >
             {isAudioActive ? (
-              <VolumeOnIcon className="w-4 h-4" />
+              <VolumeOnIcon className="w-4 h-4 text-emerald-400" />
             ) : (
               <VolumeOffIcon className="w-4 h-4" />
             )}
+            <span>{isAudioActive ? "Stop Soundscape" : "Start Soundscape"}</span>
+          </button>
+
+          <div className="flex items-center gap-2 rounded-xl border border-white/15 bg-black/50 px-3 py-1.5">
+            <span className="text-[11px] text-zinc-300">
+              Vol {Math.round(volume * 100)}%
+            </span>
+            <input
+              type="range"
+              aria-label="Audio Volume"
+              min={0}
+              max={1}
+              step={0.05}
+              value={volume}
+              onChange={(e) => handleVolumeChange(Number(e.target.value))}
+              className="w-20 cursor-pointer accent-zinc-200"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={toggleNarration}
+            className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-black/50 px-3.5 py-2 text-xs font-medium text-zinc-100 transition hover:bg-black/70"
+          >
+            {isSpeaking ? (
+              <VoiceStopIcon className="w-4 h-4 text-amber-400" />
+            ) : (
+              <VoiceStartIcon className="w-4 h-4" />
+            )}
             <span>
-              {isAudioActive
-                ? `Soundscape Active (${soundscape})`
-                : `Start Soundscape (${soundscape})`}
+              {isSpeaking ? "Stop Voice Guide" : "Eyes-Closed Voice Guide"}
             </span>
           </button>
 

@@ -2,10 +2,12 @@ import {
   BookOpen,
   Compass,
   Film,
+  Headphones,
   Maximize2,
   Minimize2,
   Music,
   Sparkles,
+  Square,
   Sun,
   Terminal,
   Volume2,
@@ -58,4 +60,12 @@ export function DestinationIcon({ className = "w-4 h-4" }: IconProps) {
 
 export function TraceIcon({ className = "w-4 h-4" }: IconProps) {
   return <Terminal className={className} />;
+}
+
+export function VoiceStartIcon({ className = "w-4 h-4" }: IconProps) {
+  return <Headphones className={className} />;
+}
+
+export function VoiceStopIcon({ className = "w-4 h-4" }: IconProps) {
+  return <Square className={className} />;
 }
