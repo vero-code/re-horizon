@@ -3,8 +3,8 @@ import {
   findQlooTags,
   searchQlooEntities,
   getQlooInsights,
-  QlooTraceStep,
 } from "@/lib/qloo";
+import { QlooTraceStep } from "@/types/qloo";
 
 export async function GET() {
   const traceLog: QlooTraceStep[] = [];
