@@ -43,7 +43,7 @@ async function qlooFetch(
       "X-Api-Key": getApiKey(),
       Accept: "application/json",
     },
-    cache: "no-store",
+    next: { revalidate: QLOO_DEFAULTS.CACHE_REVALIDATE_SECONDS },
   });
 
   const data = await response.json();
