@@ -37,10 +37,6 @@ export function HorizonCanvas({ session }: HorizonCanvasProps) {
   const narratorRef = useRef<SpeechNarrator | null>(null);
 
   useEffect(() => {
-    setActiveSoundscape(initialSoundscape);
-  }, [initialSoundscape]);
-
-  useEffect(() => {
     const engine = new SoundscapeEngine();
     const narrator = new SpeechNarrator(
       (speaking) => {

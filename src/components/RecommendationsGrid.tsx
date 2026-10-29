@@ -7,6 +7,7 @@ import {
   DestinationIcon,
   MovieIcon,
 } from "@/components/icons/HorizonIcons";
+import Image from "next/image";
 
 interface RecommendationsGridProps {
   recommendations: HorizonRecommendations;
@@ -45,10 +46,12 @@ function DomainColumn({ title, subtitle, icon, items }: DomainColumnProps) {
             >
               <div className="flex items-start gap-3">
                 {item.imageUrl && (
-                  <img
+                  <Image
                     src={item.imageUrl}
                     alt={item.name}
-                    loading="lazy"
+                    width={56}
+                    height={56}
+                    unoptimized
                     className="h-14 w-14 shrink-0 rounded-lg border border-zinc-800 object-cover"
                   />
                 )}

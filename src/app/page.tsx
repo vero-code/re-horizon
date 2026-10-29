@@ -108,13 +108,17 @@ export default function HomePage() {
 
         {session && (
           <div className="space-y-8">
-            <HorizonCanvas session={session} />
+            <HorizonCanvas
+              key={`canvas-${session.narrative.title}`}
+              session={session}
+            />
             <RecommendationsGrid recommendations={session.recommendations} />
-              <TraceLogPanel
-                session={session}
-                isLoading={isLoading}
-                onRefineSignals={handleRefineSignals}
-              />
+            <TraceLogPanel
+              key={`trace-${session.signals.activeTagIds.join(",")}-${session.signals.activeEntityIds.join(",")}`}
+              session={session}
+              isLoading={isLoading}
+              onRefineSignals={handleRefineSignals}
+            />
           </div>
         )}
       </main>

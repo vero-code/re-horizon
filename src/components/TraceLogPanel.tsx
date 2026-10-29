@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { HorizonSession } from "@/types/horizon";
 import { SparklesIcon, TraceIcon } from "@/components/icons/HorizonIcons";
 
@@ -24,11 +24,6 @@ export function TraceLogPanel({
   const [selectedEntities, setSelectedEntities] = useState<string[]>(
     signals.activeEntityIds
   );
-
-  useEffect(() => {
-    setSelectedTags(signals.activeTagIds);
-    setSelectedEntities(signals.activeEntityIds);
-  }, [signals.activeTagIds, signals.activeEntityIds]);
 
   const toggleTag = (id: string) => {
     setSelectedTags((prev) =>
