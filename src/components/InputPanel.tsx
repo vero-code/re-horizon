@@ -1,8 +1,14 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { ENERGY_OPTIONS, HORIZON_PRESETS } from "@/constants/horizon";
 import { EnergyLevel, HorizonPreset, HorizonRequest } from "@/types/horizon";
-import { SparklesIcon } from "@/components/icons/HorizonIcons";
+import { VoiceInputRecognizer } from "@/lib/voice-input";
+import {
+  MicOffIcon,
+  MicOnIcon,
+  SparklesIcon,
+} from "@/components/icons/HorizonIcons";
 
 interface InputPanelProps {
   yearning: string;
@@ -23,10 +29,43 @@ export function InputPanel({
   onSelectPreset,
   onSubmit,
 }: InputPanelProps) {
+  const [isListening, setIsListening] = useState(false);
+  const [micError, setMicError] = useState<string | null>(null);
+  const recognizerRef = useRef<VoiceInputRecognizer | null>(null);
+
   const currentEnergyIndex = Math.max(
     0,
     ENERGY_OPTIONS.findIndex((o) => o.value === energyLevel)
   );
+
+  useEffect(() => {
+    const recognizer = new VoiceInputRecognizer({
+      onTranscript: (text) => {
+        onYearningChange(text);
+      },
+      onStateChange: (listening) => {
+        setIsListening(listening);
+      },
+      onError: (msg) => {
+        setMicError(msg);
+      },
+    });
+    recognizerRef.current = recognizer;
+
+    return () => {
+      recognizer.stop();
+    };
+  }, [onYearningChange]);
+
+  const toggleMicrophone = () => {
+    setMicError(null);
+    if (!recognizerRef.current) return;
+    if (isListening) {
+      recognizerRef.current.stop();
+    } else {
+      recognizerRef.current.start();
+    }
+  };
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,12 +106,39 @@ export function InputPanel({
 
       <form onSubmit={handleFormSubmit} className="space-y-5">
         <div>
-          <label
-            htmlFor="yearning-input"
-            className="block text-sm font-medium text-zinc-300"
-          >
-            2. Describe the outside world or sensation you miss
-          </label>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <label
+              htmlFor="yearning-input"
+              className="block text-sm font-medium text-zinc-300"
+            >
+              2. Describe the outside world or sensation you miss
+            </label>
+
+            <button
+              type="button"
+              disabled={isLoading}
+              onClick={toggleMicrophone}
+              className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
+                isListening
+                  ? "border-red-500/70 bg-red-500/15 text-red-200"
+                  : "border-zinc-700 bg-zinc-950 text-zinc-200 hover:border-zinc-500"
+              }`}
+            >
+              {isListening ? (
+                <MicOffIcon className="w-3.5 h-3.5 text-red-400" />
+              ) : (
+                <MicOnIcon className="w-3.5 h-3.5" />
+              )}
+              <span>
+                {isListening ? "Stop Listening..." : "Speak via Microphone"}
+              </span>
+            </button>
+          </div>
+
+          {micError && (
+            <p className="mt-1.5 text-xs text-red-300">{micError}</p>
+          )}
+
           <textarea
             id="yearning-input"
             rows={3}

@@ -4,6 +4,8 @@ import {
   Film,
   Headphones,
   Maximize2,
+  Mic,
+  MicOff,
   Minimize2,
   Music,
   Sparkles,
@@ -68,4 +70,12 @@ export function VoiceStartIcon({ className = "w-4 h-4" }: IconProps) {
 
 export function VoiceStopIcon({ className = "w-4 h-4" }: IconProps) {
   return <Square className={className} />;
+}
+
+export function MicOnIcon({ className = "w-4 h-4" }: IconProps) {
+  return <Mic className={className} />;
+}
+
+export function MicOffIcon({ className = "w-4 h-4" }: IconProps) {
+  return <MicOff className={className} />;
 }
