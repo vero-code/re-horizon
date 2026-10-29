@@ -12,6 +12,7 @@ import { InputPanel } from "@/components/InputPanel";
 import { HorizonCanvas } from "@/components/HorizonCanvas";
 import { RecommendationsGrid } from "@/components/RecommendationsGrid";
 import { TraceLogPanel } from "@/components/TraceLogPanel";
+import { SwayingGrassBackground } from "@/components/SwayingGrassBackground";
 import Image from "next/image";
 
 export default function HomePage() {
@@ -74,8 +75,9 @@ export default function HomePage() {
   };
 
   return (
-    <div className="bg-zinc-950 text-zinc-100">
-      <main className="mx-auto max-w-6xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
+    <div className="relative text-zinc-100">
+      <SwayingGrassBackground intensity={0.85} interactive={true} />
+      <main className="relative z-10 mx-auto max-w-6xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
         <header className="space-y-2 border-b border-zinc-800 pb-6">
           <div className="flex items-center gap-3">
             <Image
