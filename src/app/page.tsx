@@ -54,6 +54,18 @@ export default function HomePage() {
     }
   };
 
+  const handleRefineSignals = (
+    activeTagIds: string[],
+    activeEntityIds: string[]
+  ) => {
+    handleSubmit({
+      yearning,
+      energyLevel,
+      activeTagIds,
+      activeEntityIds,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <main className="mx-auto max-w-6xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
@@ -92,7 +104,11 @@ export default function HomePage() {
           <div className="space-y-8">
             <HorizonCanvas session={session} />
             <RecommendationsGrid recommendations={session.recommendations} />
-            <TraceLogPanel session={session} />
+              <TraceLogPanel
+                session={session}
+                isLoading={isLoading}
+                onRefineSignals={handleRefineSignals}
+              />
           </div>
         )}
       </main>

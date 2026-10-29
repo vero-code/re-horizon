@@ -109,14 +109,28 @@ export async function buildHorizonSession(
   const resolvedTags: QlooTag[] = tagResults.flat();
   const resolvedEntities: QlooEntity[] = entityResults.flat();
 
-  const tagIds = Array.from(new Set(resolvedTags.map((t) => t.id))).slice(0, 5);
-  const entityIds = Array.from(
+  const defaultTagIds = Array.from(new Set(resolvedTags.map((t) => t.id))).slice(
+    0,
+    5
+  );
+  const defaultEntityIds = Array.from(
     new Set(resolvedEntities.map((e) => e.entity_id))
   ).slice(0, 5);
 
+  const hasCustomSelection =
+    Array.isArray(request.activeTagIds) ||
+    Array.isArray(request.activeEntityIds);
+
+  const tagIds = hasCustomSelection
+    ? (request.activeTagIds || []).slice(0, 5)
+    : defaultTagIds;
+  const entityIds = hasCustomSelection
+    ? (request.activeEntityIds || []).slice(0, 5)
+    : defaultEntityIds;
+
   if (tagIds.length === 0 && entityIds.length === 0) {
     throw new Error(
-      "Qloo did not resolve any tags or anchor entities for this input. Try refining the description with specific cultural or sensory terms."
+      "At least one Qloo tag or anchor entity must be active to query insights."
     );
   }
 
@@ -168,6 +182,8 @@ export async function buildHorizonSession(
       extracted,
       resolvedTags,
       resolvedEntities,
+      activeTagIds: tagIds,
+      activeEntityIds: entityIds,
     },
     narrative,
     recommendations: {

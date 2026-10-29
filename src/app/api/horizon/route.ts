@@ -24,7 +24,12 @@ export async function POST(req: Request) {
       );
     }
 
-    const session = await buildHorizonSession({ yearning, energyLevel });
+    const session = await buildHorizonSession({
+      yearning,
+      energyLevel,
+      activeTagIds: body.activeTagIds,
+      activeEntityIds: body.activeEntityIds,
+    });
     return NextResponse.json(session);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);

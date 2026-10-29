@@ -7,6 +7,8 @@ export type SoundscapeType = "ocean" | "rain" | "wind" | "warm-drone";
 export interface HorizonRequest {
   yearning: string;
   energyLevel: EnergyLevel;
+  activeTagIds?: string[];
+  activeEntityIds?: string[];
 }
 
 export interface ExtractedSignals {
@@ -36,6 +38,8 @@ export interface HorizonSession {
     extracted: ExtractedSignals;
     resolvedTags: QlooTag[];
     resolvedEntities: QlooEntity[];
+    activeTagIds: string[];
+    activeEntityIds: string[];
   };
   narrative: HorizonNarrative;
   recommendations: HorizonRecommendations;

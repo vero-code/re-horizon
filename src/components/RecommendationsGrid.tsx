@@ -43,25 +43,37 @@ function DomainColumn({ title, subtitle, icon, items }: DomainColumnProps) {
               key={item.entity_id}
               className="rounded-xl border border-zinc-800/80 bg-zinc-950/60 p-3.5"
             >
-              <div className="flex items-start justify-between gap-2">
-                <span className="text-sm font-medium text-zinc-100">
-                  {item.name}
-                </span>
-                {typeof item.affinity === "number" && (
-                  <span className="shrink-0 rounded bg-zinc-800 px-1.5 py-0.5 text-[11px] text-zinc-300">
-                    {Math.round(item.affinity * 100)}% match
-                  </span>
+              <div className="flex items-start gap-3">
+                {item.imageUrl && (
+                  <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    loading="lazy"
+                    className="h-14 w-14 shrink-0 rounded-lg border border-zinc-800 object-cover"
+                  />
                 )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-sm font-medium text-zinc-100">
+                      {item.name}
+                    </span>
+                    {typeof item.affinity === "number" && (
+                      <span className="shrink-0 rounded bg-zinc-800 px-1.5 py-0.5 text-[11px] text-zinc-300">
+                        {Math.round(item.affinity * 100)}% match
+                      </span>
+                    )}
+                  </div>
+
+                  {item.description && (
+                    <p className="mt-1.5 line-clamp-3 text-xs leading-relaxed text-zinc-400">
+                      {item.description}
+                    </p>
+                  )}
+                </div>
               </div>
 
-              {item.description && (
-                <p className="mt-1.5 line-clamp-3 text-xs leading-relaxed text-zinc-400">
-                  {item.description}
-                </p>
-              )}
-
               {item.tags && item.tags.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1">
+                <div className="mt-2.5 flex flex-wrap gap-1">
                   {item.tags.slice(0, 4).map((tag, idx) => (
                     <span
                       key={`${item.entity_id}-tag-${idx}`}
