@@ -9,6 +9,11 @@ export interface HorizonRequest {
   energyLevel: EnergyLevel;
   activeTagIds?: string[];
   activeEntityIds?: string[];
+  previousSignals?: {
+    extracted: ExtractedSignals;
+    resolvedTags: QlooTag[];
+    resolvedEntities: QlooEntity[];
+  };
 }
 
 export interface ExtractedSignals {

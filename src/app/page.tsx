@@ -58,11 +58,17 @@ export default function HomePage() {
     activeTagIds: string[],
     activeEntityIds: string[]
   ) => {
+    if (!session) return;
     handleSubmit({
-      yearning,
-      energyLevel,
+      yearning: session.request.yearning,
+      energyLevel: session.request.energyLevel,
       activeTagIds,
       activeEntityIds,
+      previousSignals: {
+        extracted: session.signals.extracted,
+        resolvedTags: session.signals.resolvedTags,
+        resolvedEntities: session.signals.resolvedEntities,
+      },
     });
   };
 

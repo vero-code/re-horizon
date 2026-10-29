@@ -29,6 +29,7 @@ export async function POST(req: Request) {
       energyLevel,
       activeTagIds: body.activeTagIds,
       activeEntityIds: body.activeEntityIds,
+      previousSignals: body.previousSignals,
     });
     return NextResponse.json(session);
   } catch (error: unknown) {

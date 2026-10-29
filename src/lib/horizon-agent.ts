@@ -93,21 +93,31 @@ export async function buildHorizonSession(
   const ai = getGeminiClient();
   const traceLog: QlooTraceStep[] = [];
 
-  // 1. Extract search signals via Gemini
-  const extracted = await extractCulturalSignals(ai, request);
+  let extracted: ExtractedSignals;
+  let resolvedTags: QlooTag[];
+  let resolvedEntities: QlooEntity[];
 
-  // 2. Resolve tags and anchor entities in Qloo
-  const tagResults = await Promise.all(
-    extracted.tagQueries.slice(0, 3).map((q) => findQlooTags(q, 2, traceLog))
-  );
-  const entityResults = await Promise.all(
-    extracted.anchorEntityQueries
-      .slice(0, 3)
-      .map((q) => searchQlooEntities(q, 1, traceLog))
-  );
+  if (request.previousSignals) {
+    extracted = request.previousSignals.extracted;
+    resolvedTags = request.previousSignals.resolvedTags;
+    resolvedEntities = request.previousSignals.resolvedEntities;
+  } else {
+    // 1. Extract search signals via Gemini
+    extracted = await extractCulturalSignals(ai, request);
 
-  const resolvedTags: QlooTag[] = tagResults.flat();
-  const resolvedEntities: QlooEntity[] = entityResults.flat();
+    // 2. Resolve tags and anchor entities in Qloo
+    const tagResults = await Promise.all(
+      extracted.tagQueries.slice(0, 3).map((q) => findQlooTags(q, 2, traceLog))
+    );
+    const entityResults = await Promise.all(
+      extracted.anchorEntityQueries
+        .slice(0, 3)
+        .map((q) => searchQlooEntities(q, 1, traceLog))
+    );
+
+    resolvedTags = tagResults.flat();
+    resolvedEntities = entityResults.flat();
+  }
 
   const defaultTagIds = Array.from(new Set(resolvedTags.map((t) => t.id))).slice(
     0,
